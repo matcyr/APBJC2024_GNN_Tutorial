@@ -5,42 +5,20 @@ import torch.optim as optim
 from Model.model_utils import GraphProcessor
 
 
-def global_mean_pooling(H: torch.Tensor) -> torch.Tensor:
-    """
-    Global mean pooling: Aggregates node features by averaging them.
-    Parameters:
-    - H: Node feature matrix (nodes x features)
-    
-    Returns:
-    - Aggregated graph-level feature vector (1 x features)
-    """
-    return torch.mean(H, dim=0, keepdim=True)
-
-
-def global_max_pooling(H: torch.Tensor) -> torch.Tensor:
-    """
-    Global max pooling: Aggregates node features by taking the maximum.
-    Parameters:
-    - H: Node feature matrix (nodes x features)
-    
-    Returns:
-    - Aggregated graph-level feature vector (1 x features)
-    """
-    return torch.max(H, dim=0, keepdim=True).values
 
 class GCNLayer(nn.Module):
-    def __init__(self, in_feat_dim, out_feat_dim, seed=42):
+    def __init__(self, input_dim_dim, out_feat_dim, seed=42):
         """
         Initialize the GCN layer with random weights and zero biases.
         Parameters:
-        - in_feat_dim: Number of input features (dimensionality of input node features).
+        - input_dim_dim: Number of input features (dimensionality of input node features).
         - out_feat_dim: Number of output features (dimensionality of output node features).
         """
         super(GCNLayer, self).__init__()  # Initialize nn.Module
         torch.manual_seed(seed)  # Set seed for reproducibility
         
         # Define the weight as a learnable parameter
-        self.weight = nn.Parameter(torch.randn(in_feat_dim, out_feat_dim))
+        self.weight = nn.Parameter(torch.randn(input_dim_dim, out_feat_dim))
         
         # Define the bias as a learnable parameter
         self.bias = nn.Parameter(torch.zeros(out_feat_dim))

@@ -9,7 +9,10 @@ class GraphProcessor:
         - edge_list: List of edges in the graph (undirected).
         """
         self.edge_list = edge_list
-        self.num_nodes = max(torch.tensor(edge_list).flatten()) + 1
+        ## check if edgelist is tensor or not
+        if not torch.is_tensor(self.edge_list):
+            self.edge_list = torch.tensor(self.edge_list)
+        self.num_nodes = max(self.edge_list.flatten()) + 1
         self.adj_matrix = self.build_adj_matrix()
         
     def build_adj_matrix(self):
