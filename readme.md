@@ -9,3 +9,9 @@ To install the environment from the provided `environment.yml` file, use the fol
 ```bash
 conda env create -f environment.yml -n <env_name>
 conda activate <env_name>
+```
+## To start
+Run
+```bash
+jupyter notebook notebooks/0_molecule_graph_from_scratch.ipynb
+```
