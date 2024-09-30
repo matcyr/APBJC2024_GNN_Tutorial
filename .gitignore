@@ -1,4 +1,4 @@
-./MolDataset/*
+MolDataset/*
 environment_list.txt
 ./Data/*.xlsx
 ./Data/*.csv
