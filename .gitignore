@@ -1,3 +1,6 @@
 ./MolDataset/*
 environment_list.txt
+./Data/*.xlsx
+./Data/*.csv
+./Data/*
 # notebooks/1_GCN_classification.ipynb
