@@ -4,4 +4,5 @@ environment_list.txt
 ./Data/*.csv
 Data/*.csv
 Data/*.xlsx
+notebooks/2_drug_response.ipynb
 # notebooks/1_GCN_classification.ipynb
