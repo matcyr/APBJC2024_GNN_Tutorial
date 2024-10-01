@@ -1,6 +1,6 @@
 # A Tutorial for Drug Response Prediction and Graph Neural Network at APBJC 2024
 
-This repository provides a tutorial on building a Graph Neural Network (GNN) for molecular graphs from scratch. The project includes data processing, model layers, and a Jupyter Notebook to run the full pipeline.
+This repository provides a tutorial on building a Graph Neural Network (GNN) for drug response prediction from scratch. The project includes data processing, model layers, and a Jupyter Notebook to run the full pipeline.
 
 ## Setting Up the Environment
 
