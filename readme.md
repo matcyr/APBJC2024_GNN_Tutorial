@@ -13,5 +13,5 @@ conda activate <env_name>
 ## To start
 Run
 ```bash
-jupyter notebook notebooks/0_molecule_graph_from_scratch.ipynb
+jupyter notebook notebooks/tutorial.ipynb
 ```
