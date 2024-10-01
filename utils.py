@@ -1,6 +1,9 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
+import os
+import pubchempy as pcp
 from rdkit import Chem
 from rdkit.Chem import rdmolops
 import torch
@@ -79,3 +82,142 @@ def visualize_molecule_graph(edge_list, atom_types, atomic_num_symbol_map):
     plt.legend(legend_labels.values(), legend_labels.keys(), title="Atom Types", loc="upper left")
     plt.title("Molecular Graph with Node Indices and Atom Type Colors")
     plt.show()
+
+
+
+class GDSCProcessor:
+    """
+    The GDSCProcessor class automates the download, processing, and preparation of drug response, drug metadata, and gene expression data
+    from the Genomics of Drug Sensitivity in Cancer (GDSC) project. This class organizes the data into a final dataset that can be used 
+    for further analysis, particularly in drug response predictions.
+    
+    Functions:
+    - download_gdsc_data: Downloads the GDSC2 IC50 data if not already downloaded. 'https://cog.sanger.ac.uk/cancerrxgene/GDSC_release8.5/GDSC2_fitted_dose_response_27Oct23.xlsx'
+    - process_drug_meta: Downloads and processes drug metadata, retrieves SMILES using PubChem API, and saves results. https://www.cancerrxgene.org/compounds
+    - process_gene_expression: Downloads and processes gene expression data, and matches it with the drug response data. https://www.cancerrxgene.org/gdsc1000/GDSC1000_WebResources
+    - process_final_dataframe: Combines drug response data with drug metadata and gene expression data to produce a final dataset.
+    - run: Executes all the steps to process and produce the final dataset.
+    """
+    def __init__(self, gdsc_link, drug_meta_link, exp_data_link, data_path = './Data/', verbose = True):
+        """
+        Initializes the GDSCProcessor class with URLs for downloading data and setting up the data directory.
+        
+        Parameters:
+        - gdsc_link (str): URL to download the GDSC2 fitted dose response data.
+        - drug_meta_link (str): URL to download the drug metadata (PubChem, SMILES, etc.).
+        - exp_data_link (str): URL to download gene expression data.
+        - data_path (str): Directory to save the processed data (default: '../Data/').
+        """
+        self.gdsc_link = gdsc_link
+        self.drug_meta_link = drug_meta_link
+        self.exp_data_link = exp_data_link
+        self.data_path = data_path
+        self.verbose = verbose
+        if not os.path.exists(self.data_path):
+            os.mkdir(self.data_path)
+
+    def download_gdsc_data(self):
+        gdsc_file = os.path.join(self.data_path, 'GDSC2_fitted_dose_response_27Oct23.xlsx')
+        if not os.path.exists(gdsc_file):
+            print(f"Downloading GDSC data from {self.gdsc_link}")
+            os.system(f"wget -O {gdsc_file} {self.gdsc_link}")
+        self.df = pd.read_excel(gdsc_file)
+        if self.verbose:
+            print(self.df.head())
+    
+    def process_drug_meta(self):
+        """
+        Downloads and processes the drug metadata, retrieving SMILES from the PubChem API if necessary.
+        The processed drug metadata is saved as 'drug_meta.csv'.
+        If the file already exists, it loads it from the disk.
+        """
+        drug_meta_file = os.path.join(self.data_path, 'drug_meta.csv')
+        if not os.path.exists(drug_meta_file):
+            print('-----------------')
+            print(f"Downloading Drug SMILES data")
+            self.drug_meta = pd.read_csv(self.drug_meta_link)
+            self.drug_meta.columns = self.drug_meta.columns.str.strip()
+            ## Keep only the GDSC2 drugs
+            self.drug_meta = self.drug_meta[self.drug_meta['Datasets'] == 'GDSC2']
+            ## Keep only drugs without missing values in 'PubCHEM'
+            self.drug_meta = self.drug_meta[~self.drug_meta['PubCHEM'].isna()]
+            ## Keep the unique drug by the name
+            self.drug_meta.drop_duplicates(subset='Name', inplace=True, keep='first')
+            ## Drop the PubCHEM with value 'several'
+            self.drug_meta = self.drug_meta[self.drug_meta['PubCHEM'] != 'several']
+            ## Drop the PubCHEM with value 'none'
+            self.drug_meta = self.drug_meta[self.drug_meta['PubCHEM'] != 'none']
+            self.drug_meta['PubCHEM'] = self.drug_meta['PubCHEM'].apply(lambda x: x.split(',')[0])
+
+            def get_smiles(pubchem_id):
+                try:
+                    compound = pcp.Compound.from_cid(pubchem_id)
+                    print(f"SMILES for {pubchem_id} is {compound.isomeric_smiles}")
+                    return compound.isomeric_smiles
+                except Exception as e:
+                    return f"Error: {e}"
+
+            self.drug_meta['SMILES'] = self.drug_meta['PubCHEM'].apply(get_smiles)
+            self.drug_meta.to_csv(drug_meta_file, index=False)
+        else:
+            print(f"Drug Meta data already exists")
+            self.drug_meta = pd.read_csv(drug_meta_file)
+        if self.verbose:
+            print(self.drug_meta.head())
+
+    
+    def process_gene_expression(self):
+        """
+        Downloads and processes gene expression data. It matches the COSMIC IDs from the drug response data 
+        with the gene expression data. The processed gene expression data is saved as 'rnaseq_df.csv'.
+        """
+        exp_df_file = os.path.join(self.data_path, 'rnaseq_df.csv')
+        if not os.path.exists(exp_df_file):
+            print('-----------------')
+            print(f"Downloading Gene Expression data")
+            self.exp_df = pd.read_csv(self.exp_data_link, compression="zip", sep="\t")
+            self.exp_df = self.exp_df.set_index("GENE_SYMBOLS").iloc[:, 1:].T
+            self.exp_df.index = self.exp_df.index.str.extract("DATA.([0-9]+)").to_numpy().squeeze()
+            self.exp_df.reset_index(drop=False).groupby("index").first()
+            self.exp_df.index = self.exp_df.index.astype(int)
+            common_cosmic_ids = self.df['COSMIC_ID'][self.df['COSMIC_ID'].isin(self.exp_df.index)].unique()
+            self.df = self.df[self.df['COSMIC_ID'].isin(common_cosmic_ids)]
+            self.exp_df = self.exp_df.loc[common_cosmic_ids]
+            self.exp_df = self.exp_df.loc[~self.exp_df.index.duplicated(keep='first')]
+            self.exp_df.to_csv(exp_df_file)
+        else:
+            print(f"Gene Expression data already exists")
+            self.exp_df = pd.read_csv(exp_df_file, index_col=0)
+
+    def process_final_dataframe(self):
+        # Filter the df for matching COSMIC_IDs in exp_df
+        if not os.path.exists(os.path.join(self.data_path, 'GDSC2_df.csv')):
+            self.df = self.df[self.df.COSMIC_ID.isin(self.exp_df.index)]
+
+            # Merge with drug_meta to get PubCHEM
+            GDSC2_df = self.df.merge(self.drug_meta[['Drug Id', 'PubCHEM']], left_on='DRUG_ID', right_on='Drug Id')[['PubCHEM', 'COSMIC_ID', 'LN_IC50']]
+            self.GDSC2_df = GDSC2_df[GDSC2_df['COSMIC_ID'].isin(self.exp_df.index)]
+
+            # Pivot the GDSC2_df to a table with PubCHEM as columns, COSMIC_ID as index, and LN_IC50 as values
+            # GDSC2_df = GDSC2_df.pivot(index='COSMIC_ID', columns='PubCHEM', values='LN_IC50')
+            GDSC2_df.to_csv(os.path.join(self.data_path, 'GDSC2_df.csv'))
+            if self.verbose:
+                print(GDSC2_df.head())
+        else:
+            print(f"Final DataFrame already exists")
+            self.GDSC2_df = pd.read_csv(os.path.join(self.data_path, 'GDSC2_df.csv'), index_col=0)
+            if self.verbose:
+                print(GDSC2_df.head())
+
+    def run(self):
+        # Step 1: Download GDSC Data
+        self.download_gdsc_data()
+
+        # Step 2: Process Drug Meta Data
+        self.process_drug_meta()
+
+        # Step 3: Process Gene Expression Data
+        self.process_gene_expression()
+
+        # Step 4: Process the final DataFrame
+        self.process_final_dataframe()
