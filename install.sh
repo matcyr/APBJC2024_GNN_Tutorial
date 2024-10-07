@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Update pip to the latest version
-python3 -m pip install -U pip
+python -m pip install -U pip
 
 # Install dependencies for reading and saving data
 pip install openpyxl
