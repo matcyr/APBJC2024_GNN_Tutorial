@@ -2,6 +2,15 @@
 
 This repository provides a tutorial on building a Graph Neural Network (GNN) for drug response prediction from scratch. The project includes data processing, model layers, and a Jupyter Notebook to run the full pipeline.
 
+- Drug response prediction plays a crucial role in precision medicine, aiming to determine how various drugs will impact specific cell lines or patients, ultimately assisting in creating personalized treatment strategies.
+
+- The GNN approach is highly effective for learning representations from small molecule graphs, making it well-suited for this type of task.
+
+We will cover data processing, building the model, and running predictions step by step. You are expected to:
+1. Get familiar with the drug response prediction problem.
+2. Gain basic knowledge of the Graph Neural Network (GCN and GIN).
+3. Understand the pipeline to train and evaluate machine learning and deep learning models for drug responses.
+
 We will use the **GDSC** project as the drug response dataset.
 
 
@@ -17,8 +26,11 @@ The tutorial is based on Python. The key dependencies include:
 - `torch`
 - `torch_geometric`
 
-### 1. Conda + Linux/Windows
-To install the environment from the provided `environment.yml` file, run the following commands in your terminal:
+
+**Note**: The provided dependencies are configured for CPU usage only. If you want to train the model using a GPU, please refer to the [PyTorch website](https://pytorch.org/get-started/locally/) for instructions on setting up a GPU-backed environment.
+
+### 1. Conda + Linux
+If you have a linux platform with conda installed. You can simply install the environment from the provided `environment.yml` file. Run the following commands in your terminal:
 
 ```bash
 conda env create -f environment.yml -n <env_name>
@@ -57,7 +69,7 @@ sh install.sh
 
 This will create a virtual environment named `<env_name>` and install the required dependencies using the `install.sh` script.
 
-## To Start
+## The Tutorial Notebook
 Run the following command to open the tutorial notebook:
 ```bash
 jupyter notebook notebooks/tutorial.ipynb
