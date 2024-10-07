@@ -10,7 +10,7 @@ pip install pyarrow
 pip install fastparquet
 # Install dependencies for processing drug data
 pip install pubchempy
-
+pip install rdkit
 # Install deep learning dependencies
 pip install torch torchvision torchaudio
 pip install torch_geometric
