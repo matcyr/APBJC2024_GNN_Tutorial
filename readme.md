@@ -2,6 +2,9 @@
 
 This repository provides a tutorial on building a Graph Neural Network (GNN) for drug response prediction from scratch. The project includes data processing, model layers, and a Jupyter Notebook to run the full pipeline.
 
+We will use the **GDSC** project as the drug response dataset.
+
+
 To start, in your terminal, run:
 ```bash
 git clone https://github.com/matcyr/APBJC2024_GNN_Tutorial.git
