@@ -18,6 +18,10 @@ To start, in your terminal, run:
 ```bash
 git clone https://github.com/matcyr/APBJC2024_GNN_Tutorial.git
 ```
+Then go to the project directory, by:
+```bash
+cd APBJC2024_GNN_Tutorial
+```
 
 ## Setting Up the Environment
 The tutorial is based on Python. The key dependencies include:
@@ -45,6 +49,10 @@ Run the following command in your terminal to create a virtual environment:
 
 ```bash
 python -m venv <env_name>
+```
+or:
+```bash
+python3 -m venv <env_name>
 ```
 
 #### Step 2: Activate the Virtual Environment
