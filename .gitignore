@@ -1,8 +1,11 @@
 MolDataset/*
 environment_list.txt
-./Data/*.xlsx
-./Data/*.csv
-Data/*.csv
-Data/*.xlsx
+# ./Data/*.xlsx
+# ./Data/*.csv
+# Data/*.csv
+# Data/*.xlsx
 notebooks/2_drug_response.ipynb
+my_env
 # notebooks/1_GCN_classification.ipynb
+.history
+__pycache__

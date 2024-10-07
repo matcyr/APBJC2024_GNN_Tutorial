@@ -7,6 +7,7 @@ import pubchempy as pcp
 from rdkit import Chem
 from rdkit.Chem import rdmolops
 import torch
+import zipfile
 
 def process_molecule(smiles):
     # Convert SMILES to a molecule object
@@ -165,13 +166,12 @@ class GDSCProcessor:
         if self.verbose:
             print(self.drug_meta.head())
 
-    
     def process_gene_expression(self):
         """
         Downloads and processes gene expression data. It matches the COSMIC IDs from the drug response data 
         with the gene expression data. The processed gene expression data is saved as 'rnaseq_df.csv'.
         """
-        exp_df_file = os.path.join(self.data_path, 'rnaseq_df.csv')
+        exp_df_file = os.path.join(self.data_path, 'rnaseq_df.parquet')
         if not os.path.exists(exp_df_file):
             print('-----------------')
             print(f"Downloading Gene Expression data")
@@ -184,10 +184,18 @@ class GDSCProcessor:
             self.df = self.df[self.df['COSMIC_ID'].isin(common_cosmic_ids)]
             self.exp_df = self.exp_df.loc[common_cosmic_ids]
             self.exp_df = self.exp_df.loc[~self.exp_df.index.duplicated(keep='first')]
-            self.exp_df.to_csv(exp_df_file)
+            self.exp_df.columns = self.exp_df.columns.str.strip()
+            self.exp_df.columns = self.exp_df.columns.str.upper()
+            nan_columns_idx = np.where(self.exp_df.columns.isna())[0].tolist()
+            for i, col_idx in enumerate(nan_columns_idx):
+                new_name = f"unknown_gene_{i + 1}"  # Generate unique names
+                self.exp_df.columns.values[col_idx] = new_name
+            self.exp_df = self.exp_df.astype('float32')
+            self.exp_df.columns = self.exp_df.columns.str.strip()
+            self.exp_df.to_parquet(exp_df_file)
         else:
             print(f"Gene Expression data already exists")
-            self.exp_df = pd.read_csv(exp_df_file, index_col=0)
+            self.exp_df = pd.read_parquet(exp_df_file)
 
     def process_final_dataframe(self):
         # Filter the df for matching COSMIC_IDs in exp_df
