@@ -12,7 +12,13 @@ pip install fastparquet
 pip install pubchempy
 pip install rdkit
 # Install deep learning dependencies
-pip install numpy==1.26.4
+PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
+if [[ $(echo "$PYTHON_VERSION >= 3.10" | bc -l) -eq 1 ]]; then
+    echo "Python version is $PYTHON_VERSION, installing numpy==1.26.4..."
+    pip install numpy==1.26.4
+else
+    echo "Python version is less than 3.10. Current version is $PYTHON_VERSION. Skipping numpy installation."
+fi
 pip install torch torchvision torchaudio
 pip install torch_geometric
 
