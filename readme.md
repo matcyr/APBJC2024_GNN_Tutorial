@@ -11,7 +11,7 @@ We will cover data processing, building the model, and running predictions step 
 2. Gain basic knowledge of the Graph Neural Network (GCN and GIN).
 3. Understand the pipeline to train and evaluate machine learning and deep learning models for drug responses.
 
-We will use the **GDSC** project as the drug response dataset.
+We will use the [GDSC](https://www.cancerrxgene.org/) project as the drug response dataset.
 
 
 To start, in your terminal, run:
