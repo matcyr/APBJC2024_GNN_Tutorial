@@ -31,10 +31,10 @@ The tutorial is based on Python. The key dependencies include:
 - `torch_geometric`
 
 
-**Note**: The provided dependencies are configured for CPU usage only. If you want to train the model using a GPU, please refer to the [PyTorch website](https://pytorch.org/get-started/locally/) for instructions on setting up a GPU-backed environment.
+**Note**: The provided dependencies are configured for CPU usage only. If you want to train the model using a GPU, please refer to the [PyTorch website](https://pytorch.org/get-started/locally/) and [PyTorch Geometric website](https://pytorch-geometric.readthedocs.io/en/latest/) for instructions on setting up a GPU-backed environment.
 
 ### 1. Conda + Linux
-If you have a linux platform with conda installed. You can simply install the environment from the provided `environment.yml` file. Run the following commands in your terminal:
+If you have a linux platform with conda installed, you can simply install the environment from the provided `environment.yml` file. Run the following commands in your terminal:
 
 ```bash
 conda env create -f environment.yml -n <env_name>
@@ -42,7 +42,7 @@ conda activate <env_name>
 ```
 
 ### 2. Pip
-If you do not have Conda installed, or if you are using a Mac. You can set up the environment using pip by following these instructions:
+If you do not have Conda installed, or if you are using a Mac/Windows laptop. You can set up the environment using pip by following these instructions:
 
 #### Step 1: Create a Virtual Environment
 Run the following command in your terminal to create a virtual environment:
