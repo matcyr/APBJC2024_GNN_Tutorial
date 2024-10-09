@@ -69,7 +69,7 @@ def visualize_molecule_graph(edge_list, atom_types, atomic_num_symbol_map):
 
     # Plot the graph
     plt.figure(figsize=(6, 4))
-    pos = nx.spring_layout(G)  # Positioning of the graph nodes
+    pos = nx.spring_layout(G, seed=42)  # Positioning of the graph nodes
     
     # Draw nodes with corresponding colors (use node index as labels)
     nx.draw(G, pos, with_labels=True, labels={i: i for i in G.nodes()}, 
