@@ -19,6 +19,7 @@ We will use the [GDSC](https://www.cancerrxgene.org/) project as the drug respon
 We will use **colab** to run the tutorial. Please click on <a href="https://colab.research.google.com/github/matcyr/APBJC2024_GNN_Tutorial/blob/master/notebooks/APBJC_tutorial_colab.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 or scan:
+
 <img src="qr-code_colab.png" alt="Open In Colab" width="600px"/>
 
 
