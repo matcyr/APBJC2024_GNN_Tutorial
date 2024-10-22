@@ -80,5 +80,5 @@ This will create a virtual environment named `<env_name>` and install the requir
 ## The Tutorial Notebook
 Run the following command to open the tutorial notebook:
 ```bash
-jupyter notebook notebooks/tutorial.ipynb
+jupyter notebook notebooks/APBJC_tutorial.ipynb
 ```
