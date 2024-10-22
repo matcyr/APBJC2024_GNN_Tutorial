@@ -10,6 +10,8 @@ import torch
 import zipfile
 from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
+from torch.utils.data import Dataset, DataLoader
+from torch_geometric.data import Batch
 
 def process_molecule(smiles):
     # Convert SMILES to a molecule object
@@ -281,3 +283,51 @@ def test_metric(true_values, predictions):
     r2 = r2_score(true_values, predictions)
     pcc, _ = pearsonr(true_values, predictions)
     return rmse, mae, r2, pcc
+
+
+
+class DrugResponseDataset(Dataset):
+    def __init__(self, train_df, exp_df, pyg_data_dict):
+        """
+        Args:
+            train_df (DataFrame): DataFrame containing the COSMIC_ID, PubChem_ID, and IC50 values.
+            exp_df (DataFrame): DataFrame with the gene expression features for the cancer cell lines (COSMIC_ID).
+            pyg_data_dict (dict): Dictionary containing drug features indexed by PubChem_ID.
+        """
+        # Store the original DataFrames and dictionaries
+        self.train_df = train_df
+        self.exp_df = exp_df
+        self.pyg_data_dict = pyg_data_dict
+
+        # Cache dictionaries for efficient access to cell and drug features
+        self.cell_feat_cache = {}
+        self.drug_feat_cache = {}
+
+        # Preprocess IC50 values into tensors
+        self.IC50_values = torch.tensor(train_df['LN_IC50'].values, dtype=torch.float32)
+
+    def __len__(self):
+        return len(self.train_df)
+
+    def __getitem__(self, idx):
+        """
+        Fetches the cancer cell line feature, drug feature, and IC50 value for a given index, with caching to improve efficiency.
+        """
+        pubchem_id, cosmics_id, IC50_value = self.train_df.iloc[idx]
+
+        # Cache cell features
+        if cosmics_id not in self.cell_feat_cache:
+            cell_feat = self.exp_df.loc[cosmics_id].values
+            self.cell_feat_cache[cosmics_id] = torch.tensor(cell_feat, dtype=torch.float32)
+        cell_feat = self.cell_feat_cache[cosmics_id]
+
+        # Cache drug features
+        if pubchem_id not in self.drug_feat_cache:
+            drug_feat = self.pyg_data_dict[pubchem_id]
+            self.drug_feat_cache[pubchem_id] = drug_feat
+        drug_feat = self.drug_feat_cache[pubchem_id]
+
+        # Fetch the IC50 value for the current index
+        IC50_value = self.IC50_values[idx]
+
+        return cell_feat, drug_feat, IC50_value
