@@ -123,12 +123,23 @@ class GDSCProcessor:
 
     def download_gdsc_data(self):
         gdsc_file = os.path.join(self.data_path, 'GDSC2_fitted_dose_response_27Oct23.xlsx')
-        if not os.path.exists(gdsc_file):
+        gdsc_parquet_file = os.path.join(self.data_path, 'GDSC2_fitted_dose_response_27Oct23.parquet')
+        if not os.path.exists(gdsc_parquet_file):
             print(f"Downloading GDSC data from {self.gdsc_link}")
             os.system(f"wget -O {gdsc_file} {self.gdsc_link}")
-        self.df = pd.read_excel(gdsc_file)
+            ## Save it as the parquet file
+            df = pd.read_excel(gdsc_file)
+            df.to_parquet(gdsc_file.replace('.xlsx', '.parquet'))
+            ## Delete the xlsx file
+            os.remove(gdsc_file)
+        ## Read by parquet
+        self.df = pd.read_parquet(gdsc_file.replace('.xlsx', '.parquet'))
+        # self.df = pd.read_excel(gdsc_file)
         if self.verbose:
+            print('-----------------')
+            print(f'The first 5 rows of the GDSC data:')
             print(self.df.head())
+            print('-----------------')
     
     def process_drug_meta(self):
         """
@@ -168,7 +179,10 @@ class GDSCProcessor:
             print(f"Drug Meta data already exists")
             self.drug_meta = pd.read_csv(drug_meta_file)
         if self.verbose:
+            print('-----------------')
+            print(f"The first 5 rows of the Drug Information:")
             print(self.drug_meta.head())
+            print('-----------------')
 
     def process_gene_expression(self):
         """
@@ -200,6 +214,11 @@ class GDSCProcessor:
         else:
             print(f"Gene Expression data already exists")
             self.exp_df = pd.read_parquet(exp_df_file)
+        if self.verbose:
+            print('-----------------')
+            print(f'The first 5 rows of the Gene Expression Data:')
+            print(self.exp_df.head())
+            print('-----------------')
 
     def process_final_dataframe(self):
         # Filter the df for matching COSMIC_IDs in exp_df
@@ -214,13 +233,15 @@ class GDSCProcessor:
             # GDSC2_df = GDSC2_df.pivot(index='COSMIC_ID', columns='PubCHEM', values='LN_IC50')
             GDSC2_df.to_csv(os.path.join(self.data_path, 'GDSC2_df.csv'))
             if self.verbose:
-                print(GDSC2_df.head())
+                print(self.GDSC2_df.head())
         else:
             print(f"Final DataFrame already exists")
             self.GDSC2_df = pd.read_csv(os.path.join(self.data_path, 'GDSC2_df.csv'), index_col=0)
             if self.verbose:
-                print(GDSC2_df.head())
-
+                print('-----------------')
+                print(f'The first 5 rows of the Drug Response Data:')
+                print(self.GDSC2_df.head())
+                print('-----------------')
     def run(self):
         # Step 1: Download GDSC Data
         self.download_gdsc_data()
@@ -331,3 +352,55 @@ class DrugResponseDataset(Dataset):
         IC50_value = self.IC50_values[idx]
 
         return cell_feat, drug_feat, IC50_value
+    
+    
+def get_per_cancer_df(test_df, pred_col = 'Predicted IC50 GIN'):
+    result_df = pd.DataFrame(columns = ['RMSE', 'MAE', 'R2', 'PCC'])
+    for cancer in test_df['TCGA_DESC'].unique():
+        ## Ignore the nan in 'TCGA_DESC'
+        if pd.isnull(cancer):
+            continue
+        cancer_df = test_df[test_df['TCGA_DESC'] == cancer]
+        rmse = root_mean_squared_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        mae = mean_absolute_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        r2 = r2_score(cancer_df['LN_IC50'], cancer_df[pred_col])
+        pcc, _ = pearsonr(cancer_df['LN_IC50'], cancer_df[pred_col])
+        result_df.loc[cancer, 'RMSE'] = rmse
+        result_df.loc[cancer, 'MAE'] = mae
+        result_df.loc[cancer, 'R2'] = r2
+        result_df.loc[cancer, 'PCC'] = pcc
+    return result_df
+
+def get_per_pathway_df(test_df, pred_col = 'Predicted IC50 GIN'):
+    result_df = pd.DataFrame(columns = ['RMSE', 'MAE', 'R2', 'PCC'])
+    for cancer in test_df['Target pathway'].unique():
+        ## Ignore the nan in 'TCGA_DESC'
+        if pd.isnull(cancer):
+            continue
+        cancer_df = test_df[test_df['Target pathway'] == cancer]
+        rmse = root_mean_squared_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        mae = mean_absolute_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        r2 = r2_score(cancer_df['LN_IC50'], cancer_df[pred_col])
+        pcc, _ = pearsonr(cancer_df['LN_IC50'], cancer_df[pred_col])
+        result_df.loc[cancer, 'RMSE'] = rmse
+        result_df.loc[cancer, 'MAE'] = mae
+        result_df.loc[cancer, 'R2'] = r2
+        result_df.loc[cancer, 'PCC'] = pcc
+    return result_df
+
+def get_per_drug_df(test_df, pred_col = 'Predicted IC50 GIN'):
+    result_df = pd.DataFrame(columns = ['RMSE', 'MAE', 'R2', 'PCC'])
+    for cancer in test_df['PubCHEM'].unique():
+        ## Ignore the nan in 'TCGA_DESC'
+        if pd.isnull(cancer):
+            continue
+        cancer_df = test_df[test_df['PubCHEM'] == cancer]
+        rmse = root_mean_squared_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        mae = mean_absolute_error(cancer_df['LN_IC50'], cancer_df[pred_col])
+        r2 = r2_score(cancer_df['LN_IC50'], cancer_df[pred_col])
+        pcc, _ = pearsonr(cancer_df['LN_IC50'], cancer_df[pred_col])
+        result_df.loc[cancer, 'RMSE'] = rmse
+        result_df.loc[cancer, 'MAE'] = mae
+        result_df.loc[cancer, 'R2'] = r2
+        result_df.loc[cancer, 'PCC'] = pcc
+    return result_df
