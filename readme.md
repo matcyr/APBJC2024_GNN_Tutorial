@@ -1,5 +1,7 @@
 # A Tutorial for Drug Response Prediction and Graph Neural Network at APBJC 2024
 
+Contact: **Yurui Chen**, [chenyr@sics.a-star.edu.sg](mailto:chenyr@sics.a-star.edu.sg)
+
 This repository provides a tutorial on building a Graph Neural Network (GNN) for drug response prediction from scratch. The project includes data processing, model layers, and a Jupyter Notebook to run the full pipeline.
 
 - Drug response prediction plays a crucial role in precision medicine, aiming to determine how various drugs will impact specific cell lines or patients, ultimately assisting in creating personalized treatment strategies.
@@ -15,6 +17,11 @@ We will use the [GDSC](https://www.cancerrxgene.org/) project as the drug respon
 
 ## For workshop participants:
 We will use **colab** to run the tutorial. Please click on <a href="https://colab.research.google.com/github/matcyr/APBJC2024_GNN_Tutorial/blob/master/notebooks/APBJC_tutorial_colab.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+or scan:
+<img src="qr-code_colab.png" alt="Open In Colab" width="600px"/>
+
+
 
 
 

@@ -5,6 +5,7 @@ environment_list.txt
 # Data/*.csv
 # Data/*.xlsx
 notebooks/2_drug_response.ipynb
+QR_generator.ipynb
 my_env
 # notebooks/1_GCN_classification.ipynb
 .history
