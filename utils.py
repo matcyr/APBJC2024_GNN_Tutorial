@@ -8,6 +8,8 @@ from rdkit import Chem
 from rdkit.Chem import rdmolops
 import torch
 import zipfile
+from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_score
+from scipy.stats import pearsonr
 
 def process_molecule(smiles):
     # Convert SMILES to a molecule object
@@ -229,3 +231,53 @@ class GDSCProcessor:
 
         # Step 4: Process the final DataFrame
         self.process_final_dataframe()
+
+
+
+def train(model, train_loader, criterion, optimizer, device):
+    '''
+    Trains the given model for one epoch.
+    Args:
+        model (torch.nn.Module): The neural network model to be trained.
+        train_loader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+        criterion (torch.nn.Module): Loss function.
+        optimizer (torch.optim.Optimizer): Optimizer for updating the model parameters.
+        device (torch.device): Device on which to perform training (e.g., 'cpu' or 'cuda').
+    Returns:
+        float: The loss over the training dataset for the epoch.
+    '''
+    model.train()
+    running_loss = 0.0
+    for batch in train_loader:
+        cell_feat, drug_feat, IC50 = batch[0], batch[1], batch[2]
+        cell_feat, drug_feat, IC50 = cell_feat.to(device), drug_feat.to(device), IC50.to(device)
+        optimizer.zero_grad()
+        outputs = model(cell_feat, drug_feat)
+        loss = criterion(outputs, IC50.view(-1, 1))
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item() * cell_feat.size(0)
+    epoch_loss = running_loss / len(train_loader.dataset)
+    return epoch_loss
+
+def test(model, test_loader, device):
+    model.eval()
+    predictions = []
+    true_values = []
+    with torch.no_grad():
+        for batch in test_loader:
+            cell_feat, drug_feat, IC50 = batch[0], batch[1], batch[2]
+            cell_feat, drug_feat, IC50 = cell_feat.to(device), drug_feat.to(device), IC50.to(device)
+            outputs = model(cell_feat, drug_feat)
+            predictions.extend(outputs.view(-1).detach().cpu().numpy())
+            true_values.extend(IC50.detach().cpu().numpy())
+    predictions = np.array(predictions)
+    true_values = np.array(true_values)
+    return predictions, true_values
+
+def test_metric(true_values, predictions):
+    rmse = root_mean_squared_error(true_values, predictions)
+    mae = mean_absolute_error(true_values, predictions)
+    r2 = r2_score(true_values, predictions)
+    pcc, _ = pearsonr(true_values, predictions)
+    return rmse, mae, r2, pcc
