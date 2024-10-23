@@ -16,6 +16,12 @@ We will cover data processing, building the model, and running predictions step 
 We will use the [GDSC](https://www.cancerrxgene.org/) project as the drug response dataset.
 
 ## For workshop participants:
+
+The github repo is:
+https://github.com/matcyr/APBJC2024_GNN_Tutorial
+short link to the repo:
+bit.ly/3AaFxDO
+
 We will use **colab** to run the tutorial. Please click on <a href="https://colab.research.google.com/github/matcyr/APBJC2024_GNN_Tutorial/blob/master/notebooks/APBJC_tutorial_colab.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 or scan:
