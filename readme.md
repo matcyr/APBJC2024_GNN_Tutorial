@@ -15,11 +15,6 @@ We will cover data processing, building the model, and running predictions step 
 
 We will use the [GDSC](https://www.cancerrxgene.org/) project as the drug response dataset.
 
-## For workshop participants:
-
-Join the WIFI:
-### SSID: Nahart Free WI-FI
-### Password: nahart78
 
 The github repo is:
 https://github.com/matcyr/APBJC2024_GNN_Tutorial
